@@ -129,7 +129,7 @@ if __name__ == "__main__":
     #         print('%d %d%% %.4f' % (i, i / iterations * 100, loss))
     
     # torch.save(rnn, "rnn.latest")
-    list_b = [(a, 10-a) for a in range(1, 10)]
+    list_b = [(a, 10-a) for a in range(1, 4)]
     # print(list_b)
     for b1, b2 in list_b:
         df = pd.read_csv("final_dataset2.csv")
@@ -176,7 +176,7 @@ if __name__ == "__main__":
             # output_cat = categoryFromOutput(output)
             # print("output: " + str(output_cat))
 
-        rnn = torch.load("rnn.latest")
+        rnn = torch.load("rnn.latestexp"+str(b1))
         rnn.eval()
 
         # second bloom filter
@@ -217,7 +217,44 @@ if __name__ == "__main__":
                     if bloom_filter[index]:
                         false_positives += 1
         print(str(b1) + ", " + str(b2) + " false positive rate: " + str(false_positives/len(good.keys())))
+    # early bloom filter
+    # df = pd.read_csv("final_dataset2.csv")
+    # malicious = {}
+    # good = {}
+    # for index, row in df.iterrows():
+    #     if row.label == 1:
+    #         malicious[row.url] = row.label
+    #     elif row.label == -1:
+    #         good[row.url] = row.label
+    # b1 = 4
+    # early_bloom_filter = [False for i in range(b1*len(malicious))]
 
+    # for bad in malicious:
+    #     index = hash(bad) % (b1*len(malicious))
+    #     early_bloom_filter[index] = True    
+    
+    # n_hidden = 128
+    # rnn = RNN(len(all_letters), n_hidden, 2)
+    # rnn.train()
+    # iterations = 100000
+    # print_every = 1000
+    # print("Starting training...")
+    # for i in range(iterations):
+    #     #print("iteration: ", i)
+    #     url, category= drawRandomTrainingExample()
+    #     index = hash(url) % (b1*len(malicious))
+    #     if early_bloom_filter[index]:
+    #         category = torch.tensor(1,dtype=torch.long)
+    #     else:
+    #         category = torch.tensor(0,dtype=torch.long)
+    #     output, loss = train(category, url)
+
+    #     # Print iter number, loss, name and guess
+    #     if i % print_every == 0:
+    #         print('%d %d%% %.4f' % (i, i / iterations * 100, loss))
+    
+    # torch.save(rnn, "rnn.latestexp4")
+    
 
 
 
