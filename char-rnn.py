@@ -129,7 +129,7 @@ if __name__ == "__main__":
     #         print('%d %d%% %.4f' % (i, i / iterations * 100, loss))
     
     # torch.save(rnn, "rnn.latest")
-    list_b = [(a, 10-a) for a in range(4, 5)]
+    list_b = [(a, 10-a) for a in range(2,6)]
     # print(list_b)
     for b1, b2 in list_b:
         df = pd.read_csv("final_dataset2.csv")
@@ -232,6 +232,20 @@ if __name__ == "__main__":
     # for bad in malicious:
     #     index = hash(bad) % (b1*len(malicious))
     #     early_bloom_filter[index] = True    
+    # df = pd.read_csv("final_dataset2.csv")
+    # malicious = {}
+    # good = {}
+    # for index, row in df.iterrows():
+    #     if row.label == 1:
+    #         malicious[row.url] = row.label
+    #     elif row.label == -1:
+    #         good[row.url] = row.label
+    # b1 = 9
+    # early_bloom_filter = [False for i in range(b1*len(malicious))]
+
+    # for bad in malicious:
+    #     index = hash(bad) % (b1*len(malicious))
+    #     early_bloom_filter[index] = True    
     
     # n_hidden = 128
     # rnn = RNN(len(all_letters), n_hidden, 2)
@@ -254,10 +268,6 @@ if __name__ == "__main__":
     #         print('%d %d%% %.4f' % (i, i / iterations * 100, loss))
     
     # torch.save(rnn, "rnn.latestexp4")
-    
-
-
-
 
 
         
