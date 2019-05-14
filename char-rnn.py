@@ -122,7 +122,7 @@ if __name__ == "__main__":
             malicious[row.url] = row.label
         elif row.label == -1:
             good[row.url] = row.label
-    b1 = 4
+    b1 = 9
     early_bloom_filter = [False for i in range(b1*len(malicious))]
 
     for bad in malicious:
@@ -149,7 +149,7 @@ if __name__ == "__main__":
         if i % print_every == 0:
             print('%d %d%% %.4f' % (i, i / iterations * 100, loss))
     
-    torch.save(rnn, "rnn.latestexp4")
+    torch.save(rnn, "rnn.latestexp9")
 
     
 
