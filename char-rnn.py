@@ -129,7 +129,7 @@ if __name__ == "__main__":
     #         print('%d %d%% %.4f' % (i, i / iterations * 100, loss))
     
     # torch.save(rnn, "rnn.latest")
-    list_b = [(a, 10-a) for a in range(1, 4)]
+    list_b = [(a, 10-a) for a in range(4, 5)]
     # print(list_b)
     for b1, b2 in list_b:
         df = pd.read_csv("final_dataset2.csv")
