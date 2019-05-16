@@ -3,12 +3,20 @@ import torch.nn as nn
 import pandas as pd
 import numpy as np
 
+def fetch_malicious_urls():
+    data = pd.read_csv("final_dataset.csv").url.tolist() 
+    labels = pd.read_csv("final_dataset2.csv").label.tolist()
+    for i in range(len(data)):
+        if labels[i] == -1:
+            return data[:i]
+
 def fetch_urls_labels():
     data = pd.read_csv("final_dataset2.csv").url.tolist()
     labels = pd.read_csv("final_dataset2.csv").label.tolist()
     return data, labels
 
 data, labels = fetch_urls_labels()
+malicious_data = fetch_malicious_urls()
 all_letters = list(set(''.join(data)))
 
 # Find letter index from all_letters, e.g. "a" = 0
@@ -29,6 +37,8 @@ def lineToTensor(line):
         tensor[li][0][letterToIndex(letter)] = 1
     return tensor
 
+malicious_lines = [lineToTensor(i) for i in malicious_data]
+
 all_lines = []
 for datum in data:
     all_lines.append(lineToTensor(datum))
@@ -42,6 +52,10 @@ for label in labels:
 def drawRandomTrainingExample():
     index = np.random.choice(len(all_lines), 1)[0]
     return all_lines[index], all_labels[index]
+
+def drawRandomMaliciousExample():
+    index = np.random.choice(len(malicious_lines), 1)[0]
+    return malicious_lines[index]
 
 # def drawRandomTestExample():
 #     test_lines, test_labels = all_lines[int(0.8*len(all_lines)):], all_labels[:int(0.8*len(all_labels)):]
@@ -122,34 +136,36 @@ if __name__ == "__main__":
             malicious[row.url] = row.label
         elif row.label == -1:
             good[row.url] = row.label
-    b1 = 11
-    early_bloom_filter = [False for i in range(b1*len(malicious))]
+    for j in range(4,12):
+        b1 = j
+        early_bloom_filter = [False for a in range(b1*len(malicious))]
 
-    for bad in malicious:
-        index = hash(bad) % (b1*len(malicious))
-        early_bloom_filter[index] = True    
-    
-    n_hidden = 128
-    rnn = RNN(len(all_letters), n_hidden, 2)
-    rnn.train()
-    iterations = 100000
-    print_every = 1000
-    print("Starting training...")
-    for i in range(iterations):
-        #print("iteration: ", i)
-        url, category= drawRandomTrainingExample()
-        index = hash(url) % (b1*len(malicious))
-        if early_bloom_filter[index]:
-            category = torch.tensor(1,dtype=torch.long)
-        else:
-            category = torch.tensor(0,dtype=torch.long)
-        output, loss = train(category, url)
+        for bad in malicious:
+            index = hash(bad) % (b1*len(malicious))
+            early_bloom_filter[index] = True    
+        
+        n_hidden = 128
+        rnn = RNN(len(all_letters), n_hidden, 2)
+        rnn.train()
+        iterations = 100000
+        print_every = 1000
+        print("Starting training...")
+        for i in range(iterations):
+            #print("iteration: ", i)
+            url, category= drawRandomTrainingExample()
+            index = hash(url) % (b1*len(malicious))
+            if early_bloom_filter[index]:
+                category = torch.tensor(1,dtype=torch.long)
+            else:
+                url = drawRandomMaliciousExample()
+                category = torch.tensor(0,dtype=torch.long)
+            output, loss = train(category, url)
 
-        # Print iter number, loss, name and guess
-        if i % print_every == 0:
-            print('%d %d%% %.4f' % (i, i / iterations * 100, loss))
-    
-    torch.save(rnn, "rnn.latestexp11")
+            # Print iter number, loss, name and guess
+            if i % print_every == 0:
+                print('%d %d%% %.4f' % (i, i / iterations * 100, loss))
+        
+        torch.save(rnn, "rnn.latestexp" + str(j) +  "trueneg")
 
     
 
