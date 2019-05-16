@@ -113,20 +113,22 @@ def categoryFromOutput(output):
     return category_i
 
 if __name__ == "__main__":
-
-    total = 8
-    list_b = [(a, total-a) for a in range(1, total)]
+    total = 12
+    # list_b = [(a, total-a) for a in range(10, 12)]
+    list_b = [(1, 7)]
+    # list_b = [6]
     # print(list_b)
-    for b1, b2 in list_b:
-        df = pd.read_csv("final_dataset2.csv")
-        malicious = {}
-        good = {}
+    df = pd.read_csv("final_dataset2.csv")
+    malicious = {}
+    good = {}
 
-        for index, row in df.iterrows():
-            if row.label == 1:
-                malicious[row.url] = row.label
-            elif row.label == -1:
-                good[row.url] = row.label
+    for index, row in df.iterrows():
+        if row.label == 1:
+            malicious[row.url] = row.label
+        elif row.label == -1:
+            good[row.url] = row.label
+
+    for b1, b2 in list_b:
 
         # early bloom filter
         
@@ -137,63 +139,6 @@ if __name__ == "__main__":
             early_bloom_filter[index] = True
 
         # rnn = torch.load("rnn.latest")
-        rnn = torch.load("rnn.latestexp"+str(b1))
-        rnn.eval()
-
-        # second bloom filter
-        # print("false negatives rate: " + str(count/len(malicious)))
-        bloom_filter = [False for i in range(b2*len(malicious))]
-        for bad in malicious:
-            hidden = rnn.initHidden()
-            tensor_url = lineToTensor(bad)
-            # predict_url, predict_cat = drawRandomTrainingExample()
-            for i in range(tensor_url.size()[0]):
-                output, hidden = rnn(tensor_url[i], hidden)
-            # catches false negatives 
-            if categoryFromOutput(output) == 0:
-                index = hash(bad) % (b2*len(malicious))
-                bloom_filter[index] = True
-
-        false_positives = 0
-        for url in good:
-            index = hash(url) % (b1*len(malicious))
-            if early_bloom_filter[index]:
-                hidden = rnn.initHidden()
-                tensor_url = lineToTensor(url)
-                for i in range(tensor_url.size()[0]):
-                    output, hidden = rnn(tensor_url[i], hidden)
-                if categoryFromOutput(output) == 1:
-                    false_positives += 1
-                    continue
-                else:
-                    index = hash(url) % (b2*len(malicious))
-                    if bloom_filter[index]:
-                        false_positives += 1
-        print(str(b1) + ", " + str(b2) + " false positive rate: " + str(false_positives/len(good.keys())))
-
-    total = 12
-    list_b = [(a, total-a) for a in range(1, total)]
-    # print(list_b)
-    for b1, b2 in list_b:
-        df = pd.read_csv("final_dataset2.csv")
-        malicious = {}
-        good = {}
-
-        for index, row in df.iterrows():
-            if row.label == 1:
-                malicious[row.url] = row.label
-            elif row.label == -1:
-                good[row.url] = row.label
-
-        # early bloom filter
-        
-        early_bloom_filter = [False for i in range(b1*len(malicious))]
-
-        for bad in malicious:
-            index = hash(bad) % (b1*len(malicious))
-            early_bloom_filter[index] = True
-
-        rnn = torch.load("rnn.latest")
         # rnn = torch.load("rnn.latestexp"+str(b1))
         rnn.eval()
 
@@ -208,13 +153,17 @@ if __name__ == "__main__":
                 output, hidden = rnn(tensor_url[i], hidden)
             # catches false negatives 
             if categoryFromOutput(output) == 0:
+                # print("yes")
                 index = hash(bad) % (b2*len(malicious))
                 bloom_filter[index] = True
 
         false_positives = 0
         for url in good:
             index = hash(url) % (b1*len(malicious))
-            if early_bloom_filter[index]:
+            if bloom_filter[index]:
+                false_positives += 1
+
+            if bloom_filter[index]:
                 hidden = rnn.initHidden()
                 tensor_url = lineToTensor(url)
                 for i in range(tensor_url.size()[0]):
@@ -226,60 +175,4 @@ if __name__ == "__main__":
                     index = hash(url) % (b2*len(malicious))
                     if bloom_filter[index]:
                         false_positives += 1
-        print(str(b1) + ", " + str(b2) + " false positive rate: " + str(false_positives/len(good.keys())))
-    total = 12
-    list_b = [(a, total-a) for a in range(1, 10)]
-    # print(list_b)
-    for b1, b2 in list_b:
-        df = pd.read_csv("final_dataset2.csv")
-        malicious = {}
-        good = {}
-
-        for index, row in df.iterrows():
-            if row.label == 1:
-                malicious[row.url] = row.label
-            elif row.label == -1:
-                good[row.url] = row.label
-
-        # early bloom filter
-        
-        early_bloom_filter = [False for i in range(b1*len(malicious))]
-
-        for bad in malicious:
-            index = hash(bad) % (b1*len(malicious))
-            early_bloom_filter[index] = True
-
-        # rnn = torch.load("rnn.latest")
-        rnn = torch.load("rnn.latestexp"+str(b1))
-        rnn.eval()
-
-        # second bloom filter
-        # print("false negatives rate: " + str(count/len(malicious)))
-        bloom_filter = [False for i in range(b2*len(malicious))]
-        for bad in malicious:
-            hidden = rnn.initHidden()
-            tensor_url = lineToTensor(bad)
-            # predict_url, predict_cat = drawRandomTrainingExample()
-            for i in range(tensor_url.size()[0]):
-                output, hidden = rnn(tensor_url[i], hidden)
-            # catches false negatives 
-            if categoryFromOutput(output) == 0:
-                index = hash(bad) % (b2*len(malicious))
-                bloom_filter[index] = True
-
-        false_positives = 0
-        for url in good:
-            index = hash(url) % (b1*len(malicious))
-            if early_bloom_filter[index]:
-                hidden = rnn.initHidden()
-                tensor_url = lineToTensor(url)
-                for i in range(tensor_url.size()[0]):
-                    output, hidden = rnn(tensor_url[i], hidden)
-                if categoryFromOutput(output) == 1:
-                    false_positives += 1
-                    continue
-                else:
-                    index = hash(url) % (b2*len(malicious))
-                    if bloom_filter[index]:
-                        false_positives += 1
-        print(str(b1) + ", " + str(b2) + " false positive rate: " + str(false_positives/len(good.keys())))
+        print(str(b2) + " false positive rate: " + str(false_positives/len(good.keys())))
