@@ -1,3 +1,9 @@
+import torch
+import torch.nn as nn
+import pandas as pd
+import numpy as np
+from rnn import lineToTensor, categoryFromOutput, RNN
+
 df = pd.read_csv("final_dataset2.csv")
 malicious = {}
 good = {}
@@ -42,8 +48,10 @@ for bad in malicious:
     # output_cat = categoryFromOutput(output)
     # print("output: " + str(output_cat))
 
-rnn = torch.load("rnn.latest")
+rnn = torch.load("rnn.latestexp4")
 rnn.eval()
+
+print("Hi")
 
 # second bloom filter
 b2 = 6
